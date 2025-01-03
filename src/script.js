@@ -2,7 +2,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import GUI from "lil-gui";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
+import coffeeSmokeVertexShader from "./shaders/coffeeSmoke/vertex.glsl";
+import coffeeSmokeFragmentShader from "./shaders/coffeeSmoke/fragment.glsl";
 /**
  * Base
  */
@@ -80,6 +81,60 @@ gltfLoader.load("./bakedModel.glb", (gltf) => {
   scene.add(gltf.scene);
 });
 
+// Smoke
+
+const smokeGeometry = new THREE.PlaneGeometry(1, 1, 16, 64);
+smokeGeometry.translate(0, 0.5, 0);
+smokeGeometry.scale(1.5, 6, 1.5);
+
+const perlinTexture = textureLoader.load("./perlin.png");
+perlinTexture.wrapS = THREE.RepeatWrapping;
+perlinTexture.wrapT = THREE.RepeatWrapping;
+
+const smokeMaterial = new THREE.ShaderMaterial({
+  // wireframe: true,
+  vertexShader: coffeeSmokeVertexShader,
+  fragmentShader: coffeeSmokeFragmentShader,
+  uniforms: {
+    uTime: new THREE.Uniform(0),
+    uPerlinTexture: new THREE.Uniform(perlinTexture),
+    uRcolor: new THREE.Uniform(0.6),
+    uGcolor: new THREE.Uniform(0.3),
+    uBcolor: new THREE.Uniform(0.2),
+  },
+  transparent: true,
+  side: THREE.DoubleSide,
+});
+const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial);
+smoke.position.y = 1.83;
+scene.add(smoke);
+
+// Tweaks
+
+gui
+  .add(smokeMaterial.uniforms.uRcolor, "value")
+  .min(0)
+  .max(2)
+  .step(0.01)
+  .name("Red")
+  .onFinishChange((red) => (smokeMaterial.uniforms.uRcolor.value = red));
+
+gui
+  .add(smokeMaterial.uniforms.uGcolor, "value")
+  .min(0)
+  .max(2)
+  .step(0.01)
+  .name("Green")
+  .onFinishChange((green) => (smokeMaterial.uniforms.uRcolor.value = green));
+
+gui
+  .add(smokeMaterial.uniforms.uBcolor, "value")
+  .min(0)
+  .max(2)
+  .step(0.01)
+  .name("Blue")
+  .onFinishChange((blue) => (smokeMaterial.uniforms.uRcolor.value = blue));
+
 /**
  * Animate
  */
@@ -87,6 +142,9 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+  // Update smoke
+
+  smokeMaterial.uniforms.uTime.value = elapsedTime;
 
   // Update controls
   controls.update();
