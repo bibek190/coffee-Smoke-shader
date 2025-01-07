@@ -97,10 +97,32 @@ const smokeMaterial = new THREE.ShaderMaterial({
   uniforms: {
     uTime: new THREE.Uniform(0),
     uPerlinTexture: new THREE.Uniform(perlinTexture),
+    uRedColor: new THREE.Uniform(0.6),
+    uGreenColor: new THREE.Uniform(0.3),
+    uBlueColor: new THREE.Uniform(0.2),
   },
   transparent: true,
   depthWrite: false,
 });
+
+gui
+  .add(smokeMaterial.uniforms.uRedColor, "value")
+  .min(0)
+  .max(2)
+  .step(0.01)
+  .name("Red Vapour");
+gui
+  .add(smokeMaterial.uniforms.uGreenColor, "value")
+  .min(0)
+  .max(2)
+  .step(0.01)
+  .name("Red Vapour");
+gui
+  .add(smokeMaterial.uniforms.uBlueColor, "value")
+  .min(0)
+  .max(2)
+  .step(0.01)
+  .name("Red Vapour");
 
 const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial);
 scene.add(smoke);
